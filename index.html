@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disphobias - Phobia Tests</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #1f1f1f;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        main {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #1f1f1f;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .btn:hover {
+            background-color: #444;
+        }
+        .test-section {
+            display: none;
+            margin-top: 20px;
+        }
+        .disclaimer {
+            font-size: 0.9em;
+            color: #aaa;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .warning {
+            color: #ff4d4d;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Disphobias</h1>
+        <p>Test for common phobias. Age Rating: 13+ (16+ in Europe)</p>
+    </header>
+    <main>
+        <h2>Select a Test</h2>
+        <button class="btn" onclick="showTest('glossophobia')">Glossophobia Test</button>
+        <button class="btn" onclick="showTest('claustrophobia')">Claustrophobia Test</button>
+        <button class="btn" onclick="showTest('ptsd')">PTSD Test (18+)</button>
+
+        <div id="glossophobia" class="test-section">
+            <h3>Glossophobia Test</h3>
+            <form id="glossophobiaForm">
+                <label>Do you feel nervous or sweaty when asked to speak in front of a group?</label><br>
+                <input type="radio" name="q1" value="yes" required> Yes<br>
+                <input type="radio" name="q1" value="no"> No<br><br>
+
+                <label>Have you avoided situations where you might need to speak publicly?</label><br>
+                <input type="radio" name="q2" value="yes" required> Yes<br>
+                <input type="radio" name="q2" value="no"> No<br><br>
+
+                <button type="button" class="btn" onclick="calculateResult('glossophobia')">Submit</button>
+            </form>
+        </div>
+
+        <div id="claustrophobia" class="test-section">
+            <h3>Claustrophobia Test</h3>
+            <form id="claustrophobiaForm">
+                <label>Do you feel panicked in small, enclosed spaces?</label><br>
+                <input type="radio" name="q1" value="yes" required> Yes<br>
+                <input type="radio" name="q1" value="no"> No<br><br>
+
+                <label>Have you avoided elevators or small rooms due to discomfort?</label><br>
+                <input type="radio" name="q2" value="yes" required> Yes<br>
+                <input type="radio" name="q2" value="no"> No<br><br>
+
+                <button type="button" class="btn" onclick="calculateResult('claustrophobia')">Submit</button>
+            </form>
+        </div>
+
+        <div id="ptsd" class="test-section">
+            <h3>PTSD Test (18+)</h3>
+            <p class="warning">Warning: This test may involve sensitive questions. Proceed with caution.</p>
+            <form id="ptsdForm">
+                <label>Do you frequently experience flashbacks or nightmares about a traumatic event?</label><br>
+                <input type="radio" name="q1" value="yes" required> Yes<br>
+                <input type="radio" name="q1" value="no"> No<br><br>
+
+                <label>Do you avoid reminders of a past traumatic experience?</label><br>
+                <input type="radio" name="q2" value="yes" required> Yes<br>
+                <input type="radio" name="q2" value="no"> No<br><br>
+
+                <button type="button" class="btn" onclick="calculateResult('ptsd')">Submit</button>
+            </form>
+        </div>
+
+        <p id="result"></p>
+        <p class="disclaimer">Disclaimer: These tests are not medically accurate. Consult a professional for accurate diagnosis.</p>
+    </main>
+    <script>
+        function showTest(testId) {
+            const sections = document.querySelectorAll('.test-section');
+            sections.forEach(section => section.style.display = 'none');
+            document.getElementById(testId).style.display = 'block';
+        }
+
+        function calculateResult(testType) {
+            const form = document.getElementById(testType + 'Form');
+            const result = document.getElementById('result');
+            let score = 0;
+
+            const answers = new FormData(form);
+            answers.forEach(value => {
+                if (value === "yes") score++;
+            });
+
+            let feedback = '';
+            switch (testType) {
+                case 'glossophobia':
+                    feedback = score >= 2 ? "You might have glossophobia." : "You probably don't have glossophobia.";
+                    break;
+                case 'claustrophobia':
+                    feedback = score >= 2 ? "You might have claustrophobia." : "You probably don't have claustrophobia.";
+                    break;
+                case 'ptsd':
+                    feedback = score >= 2 ? "You might have PTSD. Please consult a professional." : "You probably don't have PTSD.";
+                    break;
+            }
+            result.textContent = feedback;
+        }
+    </script>
+</body>
+</html>
