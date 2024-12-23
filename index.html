@@ -43,19 +43,24 @@
         .btn:hover {
             background-color: #444;
         }
-        .test-section {
+        .community-section, .quiz-creation, .quiz-list {
             display: none;
             margin-top: 20px;
         }
-        .disclaimer {
-            font-size: 0.9em;
-            color: #aaa;
-            text-align: center;
-            margin-top: 20px;
+        textarea, input {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            background-color: #333;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            border-radius: 4px;
         }
-        .warning {
-            color: #ff4d4d;
-            font-weight: bold;
+        .quiz-item {
+            background: #292929;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -65,90 +70,105 @@
         <p>Test for common phobias. Age Rating: 13+ (16+ in Europe)</p>
     </header>
     <main>
-        <h2>Select a Test</h2>
-        <button class="btn" onclick="showTest('glossophobia')">Glossophobia Test</button>
-        <button class="btn" onclick="showTest('claustrophobia')">Claustrophobia Test</button>
-        <button class="btn" onclick="showTest('ptsd')">PTSD Test (18+)</button>
+        <h2>Select a Section</h2>
+        <button class="btn" onclick="showSection('tests')">Phobia Tests</button>
+        <button class="btn" onclick="showSection('community')">Community Quizzes</button>
 
-        <div id="glossophobia" class="test-section">
-            <h3>Glossophobia Test</h3>
-            <form id="glossophobiaForm">
-                <label>Do you feel nervous or sweaty when asked to speak in front of a group?</label><br>
-                <input type="radio" name="q1" value="yes" required> Yes<br>
-                <input type="radio" name="q1" value="no"> No<br><br>
-
-                <label>Have you avoided situations where you might need to speak publicly?</label><br>
-                <input type="radio" name="q2" value="yes" required> Yes<br>
-                <input type="radio" name="q2" value="no"> No<br><br>
-
-                <button type="button" class="btn" onclick="calculateResult('glossophobia')">Submit</button>
-            </form>
+        <!-- Phobia Tests Section -->
+        <div id="tests" class="community-section">
+            <button class="btn" onclick="showTest('glossophobia')">Glossophobia Test</button>
+            <button class="btn" onclick="showTest('claustrophobia')">Claustrophobia Test</button>
+            <button class="btn" onclick="showTest('ptsd')">PTSD Test (18+)</button>
         </div>
 
-        <div id="claustrophobia" class="test-section">
-            <h3>Claustrophobia Test</h3>
-            <form id="claustrophobiaForm">
-                <label>Do you feel panicked in small, enclosed spaces?</label><br>
-                <input type="radio" name="q1" value="yes" required> Yes<br>
-                <input type="radio" name="q1" value="no"> No<br><br>
+        <!-- Community Section -->
+        <div id="community" class="community-section">
+            <button class="btn" onclick="showCommunitySection('create')">Create a Quiz</button>
+            <button class="btn" onclick="showCommunitySection('view')">View Quizzes</button>
 
-                <label>Have you avoided elevators or small rooms due to discomfort?</label><br>
-                <input type="radio" name="q2" value="yes" required> Yes<br>
-                <input type="radio" name="q2" value="no"> No<br><br>
+            <!-- Quiz Creation -->
+            <div id="create" class="quiz-creation">
+                <h3>Create a Quiz</h3>
+                <input type="text" id="quizTitle" placeholder="Quiz Title" required>
+                <textarea id="quizDescription" placeholder="Quiz Description" required></textarea>
+                <button class="btn" onclick="saveQuiz()">Save Quiz</button>
+            </div>
 
-                <button type="button" class="btn" onclick="calculateResult('claustrophobia')">Submit</button>
-            </form>
+            <!-- Quiz List -->
+            <div id="view" class="quiz-list">
+                <h3>Quizzes</h3>
+                <button class="btn" onclick="sortQuizzes('newest')">Sort by Newest</button>
+                <button class="btn" onclick="sortQuizzes('oldest')">Sort by Oldest</button>
+                <div id="quizContainer"></div>
+            </div>
         </div>
-
-        <div id="ptsd" class="test-section">
-            <h3>PTSD Test (18+)</h3>
-            <p class="warning">Warning: This test may involve sensitive questions. Proceed with caution.</p>
-            <form id="ptsdForm">
-                <label>Do you frequently experience flashbacks or nightmares about a traumatic event?</label><br>
-                <input type="radio" name="q1" value="yes" required> Yes<br>
-                <input type="radio" name="q1" value="no"> No<br><br>
-
-                <label>Do you avoid reminders of a past traumatic experience?</label><br>
-                <input type="radio" name="q2" value="yes" required> Yes<br>
-                <input type="radio" name="q2" value="no"> No<br><br>
-
-                <button type="button" class="btn" onclick="calculateResult('ptsd')">Submit</button>
-            </form>
-        </div>
-
-        <p id="result"></p>
-        <p class="disclaimer">Disclaimer: These tests are not medically accurate. Consult a professional for accurate diagnosis.</p>
     </main>
+
     <script>
-        function showTest(testId) {
-            const sections = document.querySelectorAll('.test-section');
+        let quizzes = JSON.parse(localStorage.getItem('quizzes')) || [];
+
+        function showSection(sectionId) {
+            const sections = document.querySelectorAll('.community-section');
             sections.forEach(section => section.style.display = 'none');
-            document.getElementById(testId).style.display = 'block';
+            document.getElementById(sectionId).style.display = 'block';
         }
 
-        function calculateResult(testType) {
-            const form = document.getElementById(testType + 'Form');
-            const result = document.getElementById('result');
-            let score = 0;
+        function showCommunitySection(sectionId) {
+            const subsections = document.querySelectorAll('.quiz-creation, .quiz-list');
+            subsections.forEach(section => section.style.display = 'none');
+            document.getElementById(sectionId).style.display = 'block';
 
-            const answers = new FormData(form);
-            answers.forEach(value => {
-                if (value === "yes") score++;
+            if (sectionId === 'view') {
+                displayQuizzes();
+            }
+        }
+
+        function saveQuiz() {
+            const title = document.getElementById('quizTitle').value.trim();
+            const description = document.getElementById('quizDescription').value.trim();
+
+            if (!title || !description) {
+                alert('Please fill in both fields.');
+                return;
+            }
+
+            const quiz = {
+                title,
+                description,
+                date: new Date().toISOString()
+            };
+
+            quizzes.push(quiz);
+            localStorage.setItem('quizzes', JSON.stringify(quizzes));
+            document.getElementById('quizTitle').value = '';
+            document.getElementById('quizDescription').value = '';
+            alert('Quiz saved!');
+        }
+
+        function displayQuizzes(sortOrder = 'newest') {
+            const container = document.getElementById('quizContainer');
+            container.innerHTML = '';
+
+            const sortedQuizzes = quizzes.sort((a, b) => {
+                return sortOrder === 'newest'
+                    ? new Date(b.date) - new Date(a.date)
+                    : new Date(a.date) - new Date(b.date);
             });
 
-            let feedback = '';
-            switch (testType) {
-                case 'glossophobia':
-                    feedback = score >= 2 ? "You might have glossophobia." : "You probably don't have glossophobia.";
-                    break;
-                case 'claustrophobia':
-                    feedback = score >= 2 ? "You might have claustrophobia." : "You probably don't have claustrophobia.";
-                    break;
-                case 'ptsd':
-                    feedback = score >= 2 ? "You might have PTSD. Please consult a professional." : "You probably don't have PTSD.";
-                    break;
-            }
-            result.textContent = feedback;
+            sortedQuizzes.forEach(quiz => {
+                const quizItem = document.createElement('div');
+                quizItem.classList.add('quiz-item');
+                quizItem.innerHTML = `
+                    <h4>${quiz.title}</h4>
+                    <p>${quiz.description}</p>
+                    <small>Created on: ${new Date(quiz.date).toLocaleDateString()}</small>
+                `;
+                container.appendChild(quizItem);
+            });
+        }
+
+        function sortQuizzes(order) {
+            displayQuizzes(order);
         }
     </script>
 </body>
